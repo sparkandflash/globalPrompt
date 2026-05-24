@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"backend/database"
+	"backend/models"
 	"backend/utils"
 	"context"
 	"fmt"
@@ -49,11 +51,23 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			userID := uint(claims["sub"].(float64)) // JWT numbers are float64
-			role := claims["role"].(string)
+			sub, ok := claims["sub"].(float64)
+			if !ok || sub <= 0 {
+				http.Error(w, "Invalid token claims", http.StatusUnauthorized)
+				return
+			}
+
+			userID := uint(sub) // JWT numbers are float64
+
+			var user models.User
+			if result := database.DB.Select("id", "role").First(&user, userID); result.Error != nil {
+				utils.LogError("Token user not found", result.Error)
+				http.Error(w, "Invalid token", http.StatusUnauthorized)
+				return
+			}
 
 			ctx := context.WithValue(r.Context(), UserIDKey, userID)
-			ctx = context.WithValue(ctx, UserRoleKey, role)
+			ctx = context.WithValue(ctx, UserRoleKey, user.Role)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		} else {
