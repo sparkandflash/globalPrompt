@@ -22,6 +22,7 @@ type SEOPageData struct {
 	Content     string
 	SEOURL      string
 	AppURL      string
+	AppName     string
 }
 
 func SEOThreadView(w http.ResponseWriter, r *http.Request) {
@@ -59,13 +60,14 @@ func SEOThreadView(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rawTitle := thread.Prompt.Title
+	projectName := utils.ProjectName()
 	if rawTitle == "" {
 		rawTitle = "Prompt"
 	}
-	title := html.EscapeString(rawTitle + " — ChalkBoard")
+	title := html.EscapeString(rawTitle + " — " + projectName)
 
 	content := thread.Prompt.Content
-	
+
 	description := content
 	if len(description) > 200 {
 		description = description[:200] + "..."
@@ -85,6 +87,7 @@ func SEOThreadView(w http.ResponseWriter, r *http.Request) {
 		Content:     html.EscapeString(content),
 		SEOURL:      fmt.Sprintf("https://prompts.chalkboard.cc/%d", id),
 		AppURL:      appURL,
+		AppName:     html.EscapeString(projectName),
 	}
 
 	tmpl, err := template.ParseFiles("templates/seo_thread.html")
@@ -114,13 +117,13 @@ func SEOSitemap(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/xml")
 	fmt.Fprintf(w, `<?xml version="1.0" encoding="UTF-8"?>`+"\n")
 	fmt.Fprintf(w, `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`+"\n")
-	
+
 	for _, thread := range threads {
 		fmt.Fprintf(w, "  <url>\n")
 		fmt.Fprintf(w, "    <loc>https://prompts.chalkboard.cc/%d</loc>\n", thread.ID)
 		fmt.Fprintf(w, "    <changefreq>weekly</changefreq>\n")
 		fmt.Fprintf(w, "  </url>\n")
 	}
-	
+
 	fmt.Fprintf(w, `</urlset>`)
 }

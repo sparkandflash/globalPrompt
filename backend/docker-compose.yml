@@ -1,12 +1,12 @@
 services:
   db:
     image: postgres:15-alpine
-    container_name: globalprompts_db
+    container_name: chalkboard_db
     restart: always
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: globalprompts
+      POSTGRES_DB: chalkboard
     ports:
       - "5432:5432"
     volumes:

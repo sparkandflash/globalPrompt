@@ -60,7 +60,9 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			userID := uint(sub) // JWT numbers are float64
 
 			var user models.User
-			if result := database.DB.Select("id", "role").First(&user, userID); result.Error != nil {
+			if result := database.DB.Select("id", "role").
+				Where("users.deleted_at IS NULL").
+				First(&user, userID); result.Error != nil {
 				utils.LogError("Token user not found", result.Error)
 				http.Error(w, "Invalid token", http.StatusUnauthorized)
 				return

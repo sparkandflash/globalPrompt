@@ -1,4 +1,5 @@
 import React from 'react';
+import { PROJECT_NAME } from '../config';
 
 const Docs = () => {
     return (
@@ -6,9 +7,9 @@ const Docs = () => {
             <h1 className="text-4xl font-extrabold tracking-tight mb-8">Documentation</h1>
             
             <section className="mb-10">
-                <h2 className="text-2xl font-bold mb-4">Welcome to The ChalkBoard</h2>
+                <h2 className="text-2xl font-bold mb-4">Welcome to {PROJECT_NAME}</h2>
                 <p className="text-muted-foreground mb-4 leading-relaxed">
-                    The ChalkBoard is a platform for creating, sharing, and discovering AI prompts and character registries. 
+                    {PROJECT_NAME} is a platform for creating, sharing, and discovering AI prompts and character registries. 
                     This guide will walk you through the core concepts.
                 </p>
             </section>

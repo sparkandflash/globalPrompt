@@ -13,7 +13,7 @@
   <meta property="og:title" content="{{.Title}}">
   <meta property="og:description" content="{{.Description}}">
   <meta property="og:url" content="{{.SEOURL}}">
-  <meta property="og:site_name" content="ChalkBoard">
+  <meta property="og:site_name" content="{{.AppName}}">
   
   <!-- Twitter -->
   <meta name="twitter:card" content="summary">
@@ -68,7 +68,7 @@
 </head>
 <body>
   <header>
-    <a href="https://chalkboard.cc" style="color: #000; font-weight: bold; text-decoration: none;">ChalkBoard</a>
+    <a href="{{.AppURL}}" style="color: #000; font-weight: bold; text-decoration: none;">{{.AppName}}</a>
   </header>
   
   <main>
@@ -79,7 +79,7 @@
       <pre>{{.Content}}</pre>
     </article>
     
-    <a href="{{.AppURL}}" class="cta">View and interact with this prompt on ChalkBoard</a>
+    <a href="{{.AppURL}}" class="cta">View and interact with this prompt on {{.AppName}}</a>
   </main>
 </body>
 </html>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { Search } from "lucide-react"
 import api from '../../api'
+import { PROJECT_NAME } from '../../config'
 
 export const Header = () => {
     const navigate = useNavigate();
@@ -65,7 +66,7 @@ export const Header = () => {
             {/* Row 1: Centered Logo */}
             <div className="flex items-center justify-center px-6 md:px-10 pt-4 pb-1">
                 <RouterLink to="/" className="text-2xl font-extrabold tracking-tight text-foreground">
-                    The ChalkBoard
+                    {PROJECT_NAME}
                 </RouterLink>
             </div>
 {!isLoggedIn && (

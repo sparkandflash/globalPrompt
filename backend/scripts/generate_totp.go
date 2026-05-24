@@ -3,6 +3,7 @@ package main
 import (
 	"backend/database"
 	"backend/models"
+	"backend/utils"
 	"fmt"
 	"log"
 	"os"
@@ -33,7 +34,7 @@ func main() {
 
 	// Generate new TOTP Secret
 	key, err := totp.Generate(totp.GenerateOpts{
-		Issuer:      "globalPrompt",
+		Issuer:      utils.ProjectName(),
 		AccountName: user.Username,
 	})
 	if err != nil {

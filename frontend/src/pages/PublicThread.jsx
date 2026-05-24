@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'sonner';
+import { PROJECT_NAME } from '../config';
 
 const PublicThread = () => {
     const { id } = useParams();
@@ -18,10 +19,10 @@ const PublicThread = () => {
 
                 // Inject OG meta tags dynamically
                 const t = res.data;
-                const title = t.prompt?.title ? `${t.prompt.title} — globalPrompt` : 'globalPrompt';
+                const title = t.prompt?.title ? `${t.prompt.title} — ${PROJECT_NAME}` : PROJECT_NAME;
                 const description = t.prompt?.content
                     ? t.prompt.content.slice(0, 160).replace(/\n/g, ' ')
-                    : 'View this prompt on globalPrompt';
+                    : `View this prompt on ${PROJECT_NAME}`;
                 const url = window.location.href;
 
                 document.title = title;

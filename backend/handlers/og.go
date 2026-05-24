@@ -47,10 +47,11 @@ func OGEmbed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	title := thread.Prompt.Title
+	projectName := utils.ProjectName()
 	if title == "" {
-		title = "Prompt on globalPrompt"
+		title = "Prompt on " + projectName
 	}
-	ogTitle := html.EscapeString(title + " — globalPrompt")
+	ogTitle := html.EscapeString(title + " — " + projectName)
 
 	content := thread.Prompt.Content
 	description := content
@@ -76,7 +77,7 @@ func OGEmbed(w http.ResponseWriter, r *http.Request) {
   <meta property="og:title" content="%s" />
   <meta property="og:description" content="%s" />
   <meta property="og:url" content="%s" />
-  <meta property="og:site_name" content="globalPrompt" />
+  <meta property="og:site_name" content="%s" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="%s" />
   <meta name="twitter:description" content="%s" />
@@ -98,6 +99,7 @@ func OGEmbed(w http.ResponseWriter, r *http.Request) {
 </html>`,
 		ogTitle,
 		ogTitle, ogDescription, spaURL,
+		html.EscapeString(projectName),
 		ogTitle, ogDescription,
 		html.EscapeString(author),
 		spaURL,

@@ -39,7 +39,7 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 
 	// Generate TOTP Secret
 	key, err := totp.Generate(totp.GenerateOpts{
-		Issuer:      "globalPrompt",
+		Issuer:      utils.ProjectName(),
 		AccountName: req.Username,
 	})
 	if err != nil {
