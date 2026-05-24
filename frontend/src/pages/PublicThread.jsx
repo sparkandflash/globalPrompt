@@ -10,6 +10,7 @@ const PublicThread = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const isLoggedIn = !!localStorage.getItem('auth_token');
+    const currentUsername = localStorage.getItem('username');
 
     useEffect(() => {
         const fetchThread = async () => {
@@ -59,6 +60,20 @@ const PublicThread = () => {
         const shareUrl = `${window.location.origin}/og/${id}`;
         navigator.clipboard.writeText(shareUrl);
         toast.success('Link copied to clipboard!');
+    };
+
+    const handleDeleteComment = async (commentId) => {
+        try {
+            await api.delete(`/threads/${id}/comments/${commentId}`);
+            setThread(prev => ({
+                ...prev,
+                comments: (prev.comments || []).filter(comment => comment.id !== commentId),
+            }));
+            toast.success('Comment deleted');
+        } catch (err) {
+            console.error("Failed to delete comment", err);
+            toast.error(err.response?.data || 'Failed to delete comment');
+        }
     };
 
     if (isLoading) {
@@ -139,6 +154,15 @@ const PublicThread = () => {
                                 {comment.userName || comment.user?.username || 'Anonymous'}
                             </p>
                             <p className="text-sm text-foreground/80">{comment.content}</p>
+                            {isLoggedIn && comment.user?.username === currentUsername && (
+                                <button
+                                    type="button"
+                                    onClick={() => handleDeleteComment(comment.id)}
+                                    className="mt-2 text-xs text-destructive hover:underline"
+                                >
+                                    Delete
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}

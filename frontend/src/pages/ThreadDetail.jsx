@@ -45,6 +45,7 @@ export const ThreadDetail = () => {
 
     // Derived state
     const isAuthor = thread?.user?.username === currentUsername;
+    const isPromptAuthor = thread?.prompt?.user?.username === currentUsername || isAuthor;
 
     const handleCommentSubmit = async (e) => {
         e.preventDefault();
@@ -77,6 +78,17 @@ export const ThreadDetail = () => {
             setIsEditing(false);
         } catch (err) {
              console.error("Failed to save thread edit", err);
+        }
+    };
+
+    const handleDeleteComment = async (commentId) => {
+        try {
+            await api.delete(`/threads/${id}/comments/${commentId}`);
+            setComments(prev => prev.filter(comment => comment.id !== commentId));
+            toast.success('Comment deleted');
+        } catch (err) {
+            console.error("Failed to delete comment", err);
+            toast.error(err.response?.data || 'Failed to delete comment');
         }
     };
 
@@ -173,10 +185,10 @@ export const ThreadDetail = () => {
                                     <Button type="submit" variant="default" className="shrink-0">Comment</Button>
                                 </form>
                                 
-                                {/* Edit Thread (Author Only) */}
-                                {isAuthor && (
+                                {/* Manage Prompt (Author Only) */}
+                                {isPromptAuthor && (
                                     <Button variant="secondary" onClick={() => setIsEditing(true)}>
-                                        Edit Thread
+                                        Manage Prompt
                                     </Button>
                                 )}
                             </div>
@@ -212,6 +224,15 @@ export const ThreadDetail = () => {
                              <div className="py-3 hover:bg-muted/20 transition-colors px-2 rounded-md">
                                  <p className="text-sm font-medium mb-1">{comment.userName || comment.user?.username || 'Anonymous'}</p>
                                  <p className="text-sm text-foreground/80">{comment.content}</p>
+                                 {((isPromptAuthor && isEditing) || comment.user?.username === currentUsername) && (
+                                     <button
+                                         type="button"
+                                         onClick={() => handleDeleteComment(comment.id)}
+                                         className="mt-2 text-xs text-destructive hover:underline"
+                                     >
+                                         Delete
+                                     </button>
+                                 )}
                              </div>
                          </div>
                      ))}

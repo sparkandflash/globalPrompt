@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"backend/database"
@@ -44,7 +45,6 @@ func GetThreads(w http.ResponseWriter, r *http.Request) {
 		Preload("Prompt.Registry").
 		Preload("User").
 		Preload("Comments")
-
 
 	if filter == "created" {
 		query = query.Where("threads.user_id = ?", userId)
@@ -99,7 +99,7 @@ func GetRecentThreads(w http.ResponseWriter, r *http.Request) {
 	err := database.DB.Model(&models.Thread{}).
 		Distinct("threads.*").
 		Joins("JOIN comments ON comments.thread_id = threads.id").
-		Where("comments.user_id = ? AND comments.created_at >= ?", userId, startOfDay).
+		Where("comments.user_id = ? AND comments.created_at >= ? AND comments.deleted_at IS NULL", userId, startOfDay).
 		Preload("Prompt").
 		Order("threads.updated_at desc").
 		Find(&threads).Error
@@ -134,7 +134,6 @@ func GetThreadDetail(w http.ResponseWriter, r *http.Request) {
 		Preload("Comments").
 		Preload("Comments.User").
 		First(&thread, id).Error
-
 
 	if err != nil {
 		http.Error(w, "Thread not found", http.StatusNotFound)
@@ -210,7 +209,6 @@ func SearchThreads(w http.ResponseWriter, r *http.Request) {
 		Preload("User").
 		Preload("Comments").
 		Find(&threads).Error
-
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -289,6 +287,61 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(comment)
+}
+
+func DeleteComment(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userId, ok := r.Context().Value(middleware.UserIDKey).(uint)
+	if !ok || userId == 0 {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	pathParts := strings.Split(strings.TrimPrefix(r.URL.Path, "/threads/"), "/comments/")
+	if len(pathParts) != 2 {
+		http.Error(w, "Invalid comment route", http.StatusBadRequest)
+		return
+	}
+
+	threadId, err := strconv.Atoi(pathParts[0])
+	if err != nil {
+		http.Error(w, "Invalid thread ID", http.StatusBadRequest)
+		return
+	}
+
+	commentId, err := strconv.Atoi(pathParts[1])
+	if err != nil {
+		http.Error(w, "Invalid comment ID", http.StatusBadRequest)
+		return
+	}
+
+	var comment models.Comment
+	if err := database.DB.
+		Preload("Thread.Prompt").
+		Where("thread_id = ?", threadId).
+		First(&comment, commentId).Error; err != nil {
+		http.Error(w, "Comment not found", http.StatusNotFound)
+		return
+	}
+
+	isCommentAuthor := comment.UserID == userId
+	isPromptAuthor := comment.Thread.Prompt.UserID == userId
+	if !isCommentAuthor && !isPromptAuthor {
+		http.Error(w, "Forbidden: You cannot delete this comment", http.StatusForbidden)
+		return
+	}
+
+	if err := database.DB.Delete(&comment).Error; err != nil {
+		http.Error(w, "Failed to delete comment", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Comment deleted successfully"})
 }
 
 func UpdateThreadPrompt(w http.ResponseWriter, r *http.Request) {

@@ -34,7 +34,7 @@ func main() {
 	database.Connect()
 	// Auto Migrate
 	database.DB.AutoMigrate(&models.User{}, &models.Registry{}, &models.Prompt{}, &models.Thread{}, &models.Comment{}, &models.Notification{})
-	
+
 	// Start Background Jobs
 	utils.StartNotificationPurgeJob()
 	mux := http.NewServeMux()
@@ -172,6 +172,12 @@ func main() {
 			// Match for /threads/{id}/comments
 			if r.Method == http.MethodPost && pathLen > len("/comments") && r.URL.Path[pathLen-9:] == "/comments" {
 				handlers.CreateComment(w, r)
+				return
+			}
+
+			// Match for /threads/{id}/comments/{commentId}
+			if r.Method == http.MethodDelete && strings.Contains(r.URL.Path, "/comments/") {
+				handlers.DeleteComment(w, r)
 				return
 			}
 
