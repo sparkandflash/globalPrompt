@@ -15,6 +15,11 @@ export default function LyraTerminal() {
   const [chatLogs, setChatLogs] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
   
+  const [historyOffset, setHistoryOffset] = useState(0);
+  const [hasMoreHistory, setHasMoreHistory] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isPaginating, setIsPaginating] = useState(false);
+  
   const [loginInputValue, setLoginInputValue] = useState('');
   const [chatInputValue, setChatInputValue] = useState('');
   const [isLoginDisabled, setIsLoginDisabled] = useState(false);
@@ -40,7 +45,9 @@ export default function LyraTerminal() {
   };
 
   useEffect(() => {
-    scrollToBottomChat();
+    if (!isPaginating) {
+      scrollToBottomChat();
+    }
   }, [chatLogs, isThinking]);
 
   useEffect(() => {
@@ -67,12 +74,16 @@ export default function LyraTerminal() {
     setChatLogs([]);
     setLoginLogs([]);
     lastIdRef.current = "";
+    setHistoryOffset(0);
+    setHasMoreHistory(false);
     seenMessageContent.current = new Set();
     if (pollInterval.current) clearInterval(pollInterval.current);
   };
 
   const refinedPoll = async () => {
     if (!tokenRef.current) return;
+    if (!navigator.onLine) return; // Skip polling if device is offline to prevent ERR_INTERNET_DISCONNECTED spam
+    
     try {
       const res = await fetch(`${API_BASE}/getMessages?last_id=${lastIdRef.current}`, {
         headers: { 'Authorization': `Bearer ${tokenRef.current}` }
@@ -129,6 +140,9 @@ export default function LyraTerminal() {
       const historyRes = await getMessageHistory(offset, fetchLength);
       const data = historyRes.data;
       
+      setHistoryOffset(offset);
+      setHasMoreHistory(offset > 0);
+      
       if (data.messages && data.messages.length > 0) {
         lastIdRef.current = data.messages[data.messages.length - 1].id;
         
@@ -149,6 +163,42 @@ export default function LyraTerminal() {
       } else {
         pollInterval.current = setInterval(refinedPoll, 5000);
       }
+    }
+  };
+
+  const loadMoreHistory = async () => {
+    if (isLoadingMore || !hasMoreHistory) return;
+    
+    setIsLoadingMore(true);
+    setIsPaginating(true);
+    
+    try {
+      const fetchLength = Math.min(50, historyOffset);
+      const newOffset = Math.max(0, historyOffset - fetchLength);
+      
+      const res = await getMessageHistory(newOffset, fetchLength);
+      const data = res.data;
+      
+      if (data.messages && data.messages.length > 0) {
+        const olderLogs = [];
+        data.messages.forEach(msg => {
+          if (msg.author !== 'user') {
+            seenMessageContent.current.add(msg.content);
+          }
+          olderLogs.push({ author: msg.author, content: msg.content });
+        });
+        
+        setChatLogs(prev => [...olderLogs, ...prev]);
+        setHistoryOffset(newOffset);
+        setHasMoreHistory(newOffset > 0);
+      }
+    } catch (err) {
+      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+        handleLogout();
+      }
+    } finally {
+      setIsLoadingMore(false);
+      setTimeout(() => setIsPaginating(false), 100);
     }
   };
 
@@ -300,6 +350,18 @@ export default function LyraTerminal() {
           )}
           
           <div className="pb-5">
+            {hasMoreHistory && (
+              <div className="flex justify-center mb-4">
+                <button 
+                  onClick={loadMoreHistory}
+                  disabled={isLoadingMore}
+                  className="text-gray-500 hover:text-white transition-colors text-xs border border-gray-700 rounded px-3 py-1 cursor-pointer bg-transparent"
+                >
+                  {isLoadingMore ? "loading..." : "load previous messages"}
+                </button>
+              </div>
+            )}
+            
             {chatLogs.map((log, i) => (
               <div key={i} className={`mb-1 whitespace-pre-wrap break-words ${
                 log.author === 'system' ? 'text-system' : 
