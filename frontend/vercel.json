@@ -2,6 +2,16 @@
 {
   "rewrites": [
     { "source": "/og/:id", "destination": "https://thechalkboard-969o.onrender.com/og/:id" },
+    {
+      "source": "/api/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "lyra.chalkboard.cc"
+        }
+      ],
+      "destination": "https://lyra-api.chalkboard.cc/:path*"
+    },
     { "source": "/api/:path*", "destination": "https://thechalkboard-969o.onrender.com/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

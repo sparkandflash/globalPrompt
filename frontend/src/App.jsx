@@ -17,6 +17,7 @@ import Docs from './pages/Docs'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
 import Notifications from './pages/Notifications'
+import LyraTerminal from './pages/LyraTerminal'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -89,6 +90,7 @@ function App() {
               <Route path="/docs" element={<Docs />} />
               <Route path="/p/:id" element={<PublicThread />} />
               <Route path="/search" element={<PublicSearch />} />
+              <Route path="/lyra" element={<LyraTerminal />} />
             </Routes>
           </div>
           <Footer />
