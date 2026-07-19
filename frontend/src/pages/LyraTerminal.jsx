@@ -228,7 +228,7 @@ export default function LyraTerminal() {
   };
 
   return (
-    <div className="lyra-terminal-container flex flex-col h-[calc(100vh-160px)] md:h-[calc(100vh-200px)] w-full bg-black text-white p-5 font-mono text-sm overflow-y-auto box-border rounded-lg border border-gray-800 relative">
+    <div className="lyra-terminal-container flex flex-col h-screen w-full bg-black text-white p-5 font-mono text-sm overflow-y-auto box-border relative">
       <style>{`
         .lyra-terminal-container input {
           background: transparent;

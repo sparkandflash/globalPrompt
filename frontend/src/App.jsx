@@ -33,6 +33,21 @@ import { Footer } from "@/components/layout/Footer"
 import { Toaster } from "@/components/ui/sonner"
 
 function App() {
+  const isLyraHost = window.location.hostname === 'lyra.chalkboard.cc';
+
+  if (isLyraHost) {
+    return (
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+        <Router>
+          <Routes>
+            <Route path="*" element={<LyraTerminal />} />
+          </Routes>
+          <Toaster />
+        </Router>
+      </ThemeProvider>
+    );
+  }
+
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <Router>
