@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { getMessageHistory } from '../api';
 
 const API_BASE = "/api";
 
@@ -113,25 +114,42 @@ export default function LyraTerminal() {
     } catch (err) {}
   };
 
-  const startPolling = () => {
+  const startPolling = async () => {
     if (pollInterval.current) clearInterval(pollInterval.current);
     
-    fetch(`${API_BASE}/getMessages`, { headers: { 'Authorization': `Bearer ${token}` } })
-    .then(res => {
-      if (res.status === 401 || res.status === 403) {
-        handleLogout();
-        throw new Error('Unauthorized');
-      }
-      return res.json();
-    })
-    .then(data => {
+    try {
+      // Fetch total count first
+      const res = await getMessageHistory(0, 1);
+      const total = res.data.total;
+      
+      // Fetch up to the last 50 messages
+      const fetchLength = Math.min(50, total);
+      const offset = Math.max(0, total - fetchLength);
+      
+      const historyRes = await getMessageHistory(offset, fetchLength);
+      const data = historyRes.data;
+      
       if (data.messages && data.messages.length > 0) {
         lastIdRef.current = data.messages[data.messages.length - 1].id;
+        
+        const newLogs = [];
+        data.messages.forEach(msg => {
+          if (msg.author !== 'user') {
+            seenMessageContent.current.add(msg.content);
+          }
+          newLogs.push({ author: msg.author, content: msg.content });
+        });
+        setChatLogs(newLogs);
       }
+      
       pollInterval.current = setInterval(refinedPoll, 5000);
-    }).catch(err => {
-      pollInterval.current = setInterval(refinedPoll, 5000);
-    });
+    } catch (err) {
+      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+        handleLogout();
+      } else {
+        pollInterval.current = setInterval(refinedPoll, 5000);
+      }
+    }
   };
 
   const handleLoginSubmit = async (e) => {

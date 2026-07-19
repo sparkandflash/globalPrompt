@@ -105,7 +105,6 @@ function App() {
               <Route path="/docs" element={<Docs />} />
               <Route path="/p/:id" element={<PublicThread />} />
               <Route path="/search" element={<PublicSearch />} />
-              <Route path="/lyra" element={<LyraTerminal />} />
             </Routes>
           </div>
           <Footer />
