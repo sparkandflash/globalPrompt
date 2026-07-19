@@ -88,8 +88,8 @@ export default function LyraTerminal() {
         
         if (data.mind_state) {
           const parts = data.mind_state.split(':');
-          if (parts.length === 4) {
-            setMetrics(`MA:${parts[0]}, NE:${parts[1]}, PE:${parts[2]}, UA:${parts[3]} | HR:${parseFloat(data.heartrate).toFixed(1)} | EN:${parseFloat(data.mental_energy).toFixed(0)}`);
+          if (parts.length === 5) {
+            setMetrics(`MA:${parts[0]}, UA:${parts[1]}, SE:${parts[2]}, OX:${parts[3]}, CO:${parts[4]} | HR:${parseFloat(data.heartrate).toFixed(1)} | EN:${parseFloat(data.mental_energy).toFixed(0)}`);
           }
         }
 
