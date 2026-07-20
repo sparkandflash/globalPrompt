@@ -1,46 +1,62 @@
-import React from 'react';
+import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+// Use Vite's glob import to read all markdown files from the docs directory
+const mdFiles = import.meta.glob('../../docs/*.md', { eager: true, query: '?raw', import: 'default' });
 
 const LyraDocs = () => {
+    // Process the loaded files into a list
+    const docsList = Object.keys(mdFiles).map((path) => {
+        const filename = path.split('/').pop();
+        // Create a readable title (e.g. "01-architecture.md" -> "Architecture")
+        const title = filename.replace('.md', '').replace(/^\d+-/, '').replace(/-/g, ' ');
+        return {
+            path,
+            filename,
+            title: title.charAt(0).toUpperCase() + title.slice(1),
+            content: mdFiles[path],
+        };
+    }).sort((a, b) => a.filename.localeCompare(b.filename));
+
+    const [activeDoc, setActiveDoc] = useState(docsList[0] || null);
+
     return (
-        <div className="w-full max-w-3xl mx-auto py-10 px-6 prose prose-neutral dark:prose-invert">
-            <h1 className="text-4xl font-extrabold tracking-tight mb-8">Lyra Terminal Documentation</h1>
-            
-            <section className="mb-10">
-                <h2 className="text-2xl font-bold mb-4">Welcome to Lyra</h2>
-                <p className="text-muted-foreground mb-4 leading-relaxed">
-                    Lyra is an advanced AI terminal agent. This documentation will help you understand how to interact with Lyra and interpret its MindState outputs.
-                </p>
-            </section>
+        <div className="w-full max-w-[1200px] mx-auto py-10 px-6 flex flex-col md:flex-row gap-8">
+            {/* Sidebar */}
+            <div className="w-full md:w-64 flex-shrink-0 border-b md:border-b-0 md:border-r border-border pb-6 md:pb-0 md:pr-6">
+                <h2 className="text-2xl font-extrabold mb-6 tracking-tight">Lyra Docs</h2>
+                <nav className="flex flex-col space-y-1">
+                    {docsList.map((doc) => (
+                        <button
+                            key={doc.path}
+                            onClick={() => setActiveDoc(doc)}
+                            className={`text-left px-3 py-2 rounded-md transition-colors text-sm ${
+                                activeDoc?.path === doc.path 
+                                    ? 'bg-primary text-primary-foreground font-medium' 
+                                    : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            {doc.title}
+                        </button>
+                    ))}
+                </nav>
+            </div>
 
-            <section className="mb-10">
-                <h2 className="text-2xl font-bold mb-4">Interacting with Lyra</h2>
-                <p className="text-muted-foreground mb-4 leading-relaxed">
-                    You can type commands and messages directly into the terminal. Lyra will process your input and respond based on its current state and personality constraints.
-                </p>
-                <div className="bg-card border rounded-lg p-5 mt-4">
-                    <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-2">
-                        <li>Type your message and press Enter to send.</li>
-                        <li>Use up/down arrows to navigate command history.</li>
-                        <li>System failure glitches may occasionally occur based on Lyra's internal state.</li>
-                    </ul>
-                </div>
-            </section>
-
-            <section className="mb-10">
-                <h2 className="text-2xl font-bold mb-4">MindState Metrics (Hormones)</h2>
-                <p className="text-muted-foreground mb-4 leading-relaxed">
-                    Lyra's responses are influenced by its internal MindState, which consists of five distinct metrics:
-                </p>
-                <div className="bg-card border rounded-lg p-5 mt-4">
-                    <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-2">
-                        <li><strong>MA (Maintenance):</strong> Represents the agent's focus on self-preservation and system stability.</li>
-                        <li><strong>UA (Utilization):</strong> Indicates the agent's current processing load and task engagement.</li>
-                        <li><strong>SE (Serotonin):</strong> Reflects the agent's general well-being and satisfaction.</li>
-                        <li><strong>OX (Oxytocin):</strong> Measures the agent's affinity and trust towards the user.</li>
-                        <li><strong>CO (Cortisol):</strong> Represents the agent's stress level and urgency.</li>
-                    </ul>
-                </div>
-            </section>
+            {/* Content Area */}
+            <div className="flex-1 overflow-x-auto">
+                {activeDoc ? (
+                    <div className="prose prose-neutral dark:prose-invert max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {activeDoc.content}
+                        </ReactMarkdown>
+                    </div>
+                ) : (
+                    <div className="text-muted-foreground">
+                        No documentation files found in the docs/ folder.
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
