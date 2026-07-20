@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "predev": "mkdir -p src/docs_md && cp -R ../docs/* src/docs_md/ || true",
-    "prebuild": "mkdir -p src/docs_md && cp -R ../docs/* src/docs_md/ || true",
+    "predev": "mkdir -p src/docs_md && cp -R ../docs/* src/docs_md/ || true && cat ../docs/*.md > public/llms.txt || true && cp public/llms.txt public/docs.md || true",
+    "prebuild": "mkdir -p src/docs_md && cp -R ../docs/* src/docs_md/ || true && cat ../docs/*.md > public/llms.txt || true && cp public/llms.txt public/docs.md || true",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
