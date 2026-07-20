@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-// Use Vite's glob import to read all markdown files from the docs directory
-const mdFiles = import.meta.glob('../../docs/*.md', { eager: true, query: '?raw', import: 'default' });
+// Use Vite's glob import to read all markdown files from the docs_md directory
+const mdFiles = import.meta.glob('../docs_md/*.md', { eager: true, query: '?raw', import: 'default' });
 
 const LyraDocs = () => {
     // Process the loaded files into a list
