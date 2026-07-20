@@ -18,6 +18,7 @@ import Profile from './pages/Profile'
 import Settings from './pages/Settings'
 import Notifications from './pages/Notifications'
 import LyraTerminal from './pages/LyraTerminal'
+import LyraDocs from './pages/LyraDocs'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -40,6 +41,7 @@ function App() {
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <Router>
           <Routes>
+            <Route path="/docs" element={<LyraDocs />} />
             <Route path="*" element={<LyraTerminal />} />
           </Routes>
           <Toaster />
